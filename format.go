@@ -1,6 +1,8 @@
 package confd
 
 import (
+	"fmt"
+
 	_ "github.com/lanceryou/confd/internal/format"
 )
 
@@ -28,6 +30,11 @@ func DRegisterMarshaler(name string) {
 }
 
 // GetMarshaler get marshaler by format
-func GetMarshaler(format string) Marshaler {
-	return formatMap[format]
+func GetMarshaler(format string) (Marshaler, error) {
+	ms, ok := formatMap[format]
+	if !ok {
+		return nil, fmt.Errorf("marshaler %v has not register.", format)
+	}
+
+	return ms, nil
 }

@@ -1,11 +1,19 @@
 package confd
 
+import (
+	"fmt"
+)
+
+// the watcher. Actions can be create, update, delete
+type WatchResult struct {
+	Action string
+	Result []byte
+}
+
 //  ConfigLoader config load interface
 type ConfigLoader interface {
-	// schema {file}:{format}:{path}
 	Load(path string) ([]byte, error)
-	Watch()
-	Format() string
+	Watch(path string) (*WatchResult, error)
 	String() string
 }
 
@@ -24,6 +32,11 @@ func DRegisterConfigLoader(name string) {
 }
 
 // GetConfig get config
-func GetConfigLoader(name string) ConfigLoader {
-	return cfgMap[name]
+func GetConfigLoader(name string) (ConfigLoader, error) {
+	loader, ok := cfgMap[name]
+	if !ok {
+		return nil, fmt.Errorf("loader %v has not register.", name)
+	}
+
+	return loader, nil
 }

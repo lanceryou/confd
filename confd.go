@@ -1,12 +1,9 @@
 package confd
 
-import (
-	"fmt"
-)
-
 type Options struct {
 	loader string
 	format string
+	confer string
 }
 
 func (o *Options) apply() {
@@ -36,6 +33,7 @@ func WithFormat(format string) OptionFunc {
 // Confd conf manager
 type Confd struct {
 	opt Options
+	Config
 }
 
 func NewConfd(opts ...OptionFunc) *Confd {
@@ -53,18 +51,39 @@ func NewConfd(opts ...OptionFunc) *Confd {
 // source file, etcd,...
 // format ymal, json,ini...
 // key can read config information, eg ./xx.yml...
-
 // 解析schema
-func (c *Confd) LoadConfig(schema string) (Config, error) {
-	loader := GetConfigLoader(c.opt.loader)
-	if loader == nil {
-		return nil, fmt.Errorf("loader:%v is not support", c.opt.loader)
-	}
-
-	data, err := loader.Load(schema)
+// loader 加载配置，
+// config 只提供读取相关？
+func (c *Confd) LoadConfig(schema string) (err error) {
+	sche, err := ParseSchema(schema)
 	if err != nil {
-		return nil, fmt.Errorf("load path %v fail:%v", schema, err)
+		return
 	}
 
-	return GetConfig(loader.Format(), data), nil
+	loader, err := GetConfigLoader(sche.source)
+	if err != nil {
+		return
+	}
+
+	data, err := loader.Load(sche.key)
+	if err != nil {
+		return
+	}
+
+	marshal, err := GetMarshaler(sche.format)
+	if err != nil {
+		return
+	}
+
+	cfg, err := GetConfig(c.opt.confer)
+	if err != nil {
+		return
+	}
+
+	if err = cfg.ReadIn(marshal, data); err != nil {
+		return
+	}
+
+	c.Config = cfg
+	return
 }
