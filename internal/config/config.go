@@ -14,6 +14,11 @@ type viperConfig struct {
 	vp *viper.Viper
 }
 
+func (v *viperConfig) Clean() error {
+	v.vp = viper.New()
+	return nil
+}
+
 func (v *viperConfig) ReadIn(marshaler confd.Marshaler, data []byte) error {
 	cfg := make(map[string]interface{})
 	if err := marshaler.Unmarshal(data, &cfg); err != nil {
