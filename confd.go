@@ -1,32 +1,42 @@
 package confd
 
+import (
+	"fmt"
+)
+
 type Options struct {
-	loader string
-	format string
+	schema string
 	confer string
+	watch  bool
 }
 
 func (o *Options) apply() {
-	if o.loader == "" {
-		o.loader = "file"
+	if o.confer == "" {
+		o.confer = "default"
 	}
 
-	if o.format == "" {
-		o.format = "yaml"
+	if o.schema == "" {
+		panic(fmt.Errorf("schema must be valid"))
 	}
 }
 
 type OptionFunc func(*Options)
 
-func WithLoader(loader string) OptionFunc {
+func WithSchema(schema string) OptionFunc {
 	return func(o *Options) {
-		o.loader = loader
+		o.schema = schema
 	}
 }
 
-func WithFormat(format string) OptionFunc {
+func WithConfer(confer string) OptionFunc {
 	return func(o *Options) {
-		o.format = format
+		o.confer = confer
+	}
+}
+
+func WithWatch(watch bool) OptionFunc {
+	return func(o *Options) {
+		o.watch = watch
 	}
 }
 
@@ -54,12 +64,23 @@ func NewConfd(opts ...OptionFunc) *Confd {
 // 解析schema
 // loader 加载配置，
 // config 只提供读取相关？
-func (c *Confd) LoadConfig(schema string) (err error) {
-	sche, err := ParseSchema(schema)
+func (c *Confd) LoadConfig() (err error) {
+	sche, err := ParseSchema(c.opt.schema)
 	if err != nil {
 		return
 	}
 
+	if err = c.loadConfig(sche); err != nil {
+		return
+	}
+
+	if c.opt.watch {
+		c.watchSchema(sche)
+	}
+	return
+}
+
+func (c *Confd) loadConfig(sche *Schema) (err error) {
 	loader, err := GetConfigLoader(sche.source)
 	if err != nil {
 		return
@@ -86,4 +107,9 @@ func (c *Confd) LoadConfig(schema string) (err error) {
 
 	c.Config = cfg
 	return
+}
+
+// TODO how to watch
+func (c *Confd) watchSchema(sche *Schema) {
+
 }
