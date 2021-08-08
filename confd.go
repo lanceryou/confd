@@ -42,7 +42,8 @@ func WithWatch(watch bool) OptionFunc {
 
 // Confd conf manager
 type Confd struct {
-	opt Options
+	opt  Options
+	sche *Schema
 	ConfigLoader
 	Marshaler
 	Config
@@ -101,4 +102,28 @@ func (c *Confd) loadConfig(sche *Schema) (err error) {
 	c.ConfigLoader = loader
 	c.Marshaler = marshal
 	return
+}
+
+// watch config change.
+func (c *Confd) WatchConfig() (err error) {
+	for {
+		ret, err := c.ConfigLoader.Watch(c.sche.key)
+		if err != nil {
+			return
+		}
+
+		switch ret.Action {
+		case "create", "update":
+			if err = c.Config.Clean(); err != nil {
+				return
+			}
+			err = c.loadConfig(c.sche)
+		case "delete":
+			err = c.Config.Clean()
+		}
+
+		if err != nil {
+			return
+		}
+	}
 }
