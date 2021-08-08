@@ -43,6 +43,8 @@ func WithWatch(watch bool) OptionFunc {
 // Confd conf manager
 type Confd struct {
 	opt Options
+	ConfigLoader
+	Marshaler
 	Config
 }
 
@@ -61,23 +63,13 @@ func NewConfd(opts ...OptionFunc) *Confd {
 // source file, etcd,...
 // format ymal, json,ini...
 // key can read config information, eg ./xx.yml...
-// 解析schema
-// loader 加载配置，
-// config 只提供读取相关？
 func (c *Confd) LoadConfig() (err error) {
 	sche, err := ParseSchema(c.opt.schema)
 	if err != nil {
 		return
 	}
 
-	if err = c.loadConfig(sche); err != nil {
-		return
-	}
-
-	if c.opt.watch {
-		c.watchSchema(sche)
-	}
-	return
+	return c.loadConfig(sche)
 }
 
 func (c *Confd) loadConfig(sche *Schema) (err error) {
@@ -106,10 +98,7 @@ func (c *Confd) loadConfig(sche *Schema) (err error) {
 	}
 
 	c.Config = cfg
+	c.ConfigLoader = loader
+	c.Marshaler = marshal
 	return
-}
-
-// TODO how to watch
-func (c *Confd) watchSchema(sche *Schema) {
-
 }
