@@ -8,6 +8,7 @@ import (
 
 // Config config support multi-config format(yml, json,toml ...)
 type Config interface {
+	Clean() error
 	ReadIn(marshaler Marshaler, data []byte) error
 	Read(val interface{}) error
 	ReadSection(key string, val interface{}) error

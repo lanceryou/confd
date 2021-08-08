@@ -2,6 +2,8 @@ package confd
 
 import (
 	"fmt"
+
+	_ "github.com/lanceryou/confd/internal/register"
 )
 
 type Options struct {
