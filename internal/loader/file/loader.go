@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/lanceryou/confd"
+	"github.com/lanceryou/confd/loader"
 )
 
 type FileLoader struct {
@@ -22,7 +22,7 @@ func (f *FileLoader) Load(path string) (data []byte, err error) {
 }
 
 // TODO 后续实现
-func (f *FileLoader) Watch(path string) (ret *confd.WatchResult, err error) {
+func (f *FileLoader) Watch(path string) (ret *loader.WatchResult, err error) {
 	return nil, nil
 }
 

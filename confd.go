@@ -2,6 +2,11 @@ package confd
 
 import (
 	"fmt"
+
+	"github.com/lanceryou/confd/config"
+	"github.com/lanceryou/confd/format"
+	_ "github.com/lanceryou/confd/internal/register"
+	"github.com/lanceryou/confd/loader"
 )
 
 type Options struct {
@@ -37,9 +42,9 @@ func WithConfer(confer string) OptionFunc {
 type Confd struct {
 	opt  Options
 	sche *Schema
-	ConfigLoader
-	Marshaler
-	Config
+	loader.ConfigLoader
+	format.Marshaler
+	config.Config
 }
 
 func NewConfd(opts ...OptionFunc) *Confd {
@@ -67,7 +72,7 @@ func (c *Confd) LoadConfig() (err error) {
 }
 
 func (c *Confd) loadConfig(sche *Schema) (err error) {
-	loader, err := GetConfigLoader(sche.source)
+	loader, err := loader.GetConfigLoader(sche.source)
 	if err != nil {
 		return
 	}
@@ -77,12 +82,12 @@ func (c *Confd) loadConfig(sche *Schema) (err error) {
 		return
 	}
 
-	marshal, err := GetMarshaler(sche.format)
+	marshal, err := format.GetMarshaler(sche.format)
 	if err != nil {
 		return
 	}
 
-	cfg, err := GetConfig(c.opt.confer)
+	cfg, err := config.GetConfig(c.opt.confer)
 	if err != nil {
 		return
 	}

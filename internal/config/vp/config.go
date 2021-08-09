@@ -3,10 +3,11 @@ package vp
 import (
 	"github.com/spf13/viper"
 
-	"github.com/lanceryou/confd"
+	"github.com/lanceryou/confd/config"
+	"github.com/lanceryou/confd/format"
 )
 
-func NewConfig() confd.Config {
+func NewConfig() config.Config {
 	return &viperConfig{vp: viper.New()}
 }
 
@@ -19,7 +20,7 @@ func (v *viperConfig) Clean() error {
 	return nil
 }
 
-func (v *viperConfig) ReadIn(marshaler confd.Marshaler, data []byte) error {
+func (v *viperConfig) ReadIn(marshaler format.Marshaler, data []byte) error {
 	cfg := make(map[string]interface{})
 	if err := marshaler.Unmarshal(data, &cfg); err != nil {
 		return err

@@ -1,13 +1,15 @@
-package confd
+package config
 
 import (
 	"fmt"
+
+	"github.com/lanceryou/confd/format"
 )
 
 // Config config support multi-config format(yml, json,toml ...)
 type Config interface {
 	Clean() error
-	ReadIn(marshaler Marshaler, data []byte) error
+	ReadIn(marshaler format.Marshaler, data []byte) error
 	Read(val interface{}) error
 	ReadSection(key string, val interface{}) error
 	HasValue(key string) bool

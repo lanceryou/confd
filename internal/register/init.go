@@ -1,18 +1,20 @@
 package register
 
 import (
-	"github.com/lanceryou/confd"
+	"github.com/lanceryou/confd/config"
+	"github.com/lanceryou/confd/format"
 	"github.com/lanceryou/confd/internal/config/vp"
 	"github.com/lanceryou/confd/internal/format/json"
 	"github.com/lanceryou/confd/internal/format/yaml"
 	"github.com/lanceryou/confd/internal/loader/file"
+	"github.com/lanceryou/confd/loader"
 )
 
 func init() {
-	confd.RegisterConfig(vp.NewConfig())
-	confd.RegisterMarshaler(
+	config.RegisterConfig(vp.NewConfig())
+	format.RegisterMarshaler(
 		&json.MarshalerJson{},
 		&yaml.MarshalerYml{},
 	)
-	confd.RegisterConfigLoader(&file.FileLoader{})
+	loader.RegisterConfigLoader(&file.FileLoader{})
 }

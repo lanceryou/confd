@@ -1,4 +1,4 @@
-package confd
+package format
 
 import (
 	"fmt"
