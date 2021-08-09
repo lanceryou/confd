@@ -2,8 +2,6 @@ package confd
 
 import (
 	"fmt"
-
-	_ "github.com/lanceryou/confd/internal/format"
 )
 
 // Marshaler marshaler

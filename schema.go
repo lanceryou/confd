@@ -23,6 +23,10 @@ type Schema struct {
 // ParseSchema
 func ParseSchema(schema string) (s *Schema, err error) {
 	ss := strings.Split(schema, ":")
+	if len(ss) == 1 {
+		return parsePathSchema(schema)
+	}
+
 	if len(ss) != 3 {
 		return nil, SchemaErr
 	}
@@ -32,4 +36,18 @@ func ParseSchema(schema string) (s *Schema, err error) {
 		format: ss[1],
 		key:    ss[2],
 	}, nil
+}
+
+func parsePathSchema(path string) (s *Schema, err error) {
+	id := strings.LastIndex(path, ".")
+	if id == -1 {
+		return nil, SchemaErr
+	}
+
+	return &Schema{
+		source: "file",
+		format: path[id+1:],
+		key:    path,
+	}, nil
+
 }

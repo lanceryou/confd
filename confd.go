@@ -2,14 +2,11 @@ package confd
 
 import (
 	"fmt"
-
-	_ "github.com/lanceryou/confd/internal/register"
 )
 
 type Options struct {
 	schema string
 	confer string
-	watch  bool
 }
 
 func (o *Options) apply() {
@@ -33,12 +30,6 @@ func WithSchema(schema string) OptionFunc {
 func WithConfer(confer string) OptionFunc {
 	return func(o *Options) {
 		o.confer = confer
-	}
-}
-
-func WithWatch(watch bool) OptionFunc {
-	return func(o *Options) {
-		o.watch = watch
 	}
 }
 
@@ -111,13 +102,13 @@ func (c *Confd) WatchConfig() (err error) {
 	for {
 		ret, err := c.ConfigLoader.Watch(c.sche.key)
 		if err != nil {
-			return
+			return err
 		}
 
 		switch ret.Action {
 		case "create", "update":
 			if err = c.Config.Clean(); err != nil {
-				return
+				return err
 			}
 			err = c.loadConfig(c.sche)
 		case "delete":
@@ -125,7 +116,7 @@ func (c *Confd) WatchConfig() (err error) {
 		}
 
 		if err != nil {
-			return
+			return err
 		}
 	}
 }
