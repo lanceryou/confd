@@ -115,7 +115,7 @@ func (c *Confd) WatchConfig() (err error) {
 			if err = c.Config.Clean(); err != nil {
 				return err
 			}
-			err = c.loadConfig(c.sche)
+			err = c.Config.ReadIn(c.Marshaler, ret.Result)
 		case "delete":
 			err = c.Config.Clean()
 		}
