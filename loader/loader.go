@@ -4,9 +4,18 @@ import (
 	"fmt"
 )
 
+type OpType int
+
+const (
+	_ OpType = iota
+	Create
+	Update
+	Delete
+)
+
 // the watcher. Actions can be create, update, delete
 type WatchResult struct {
-	Action string
+	Action OpType
 	Result []byte
 }
 

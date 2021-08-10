@@ -8,6 +8,17 @@ import (
 )
 
 type FileLoader struct {
+	watcher *FileWatcher
+}
+
+// NewFileLoader
+func NewFileLoader() *FileLoader {
+	watcher, err := NewFileWatcher()
+	if err != nil {
+		panic(err)
+	}
+
+	return &FileLoader{watcher: watcher}
 }
 
 // Load load config data
@@ -23,7 +34,22 @@ func (f *FileLoader) Load(path string) (data []byte, err error) {
 
 // TODO 后续实现
 func (f *FileLoader) Watch(path string) (ret *loader.WatchResult, err error) {
-	return nil, nil
+	retChan := make(chan loader.OpType, 1)
+	err = f.watcher.AddWatch(path, func(event Event) error {
+		retChan <- event.Op
+		return nil
+	})
+	if err != nil {
+		return
+	}
+
+	ev := <-retChan
+	data, err := f.Load(path)
+	if err != nil {
+		return
+	}
+	ret = &loader.WatchResult{Action: ev, Result: data}
+	return ret, nil
 }
 
 // String file loader

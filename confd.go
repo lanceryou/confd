@@ -111,12 +111,12 @@ func (c *Confd) WatchConfig() (err error) {
 		}
 
 		switch ret.Action {
-		case "create", "update":
+		case loader.Create, loader.Update:
 			if err = c.Config.Clean(); err != nil {
 				return err
 			}
 			err = c.Config.ReadIn(c.Marshaler, ret.Result)
-		case "delete":
+		case loader.Delete:
 			err = c.Config.Clean()
 		}
 
