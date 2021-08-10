@@ -72,12 +72,12 @@ func (c *Confd) LoadConfig() (err error) {
 }
 
 func (c *Confd) loadConfig(sche *Schema) (err error) {
-	loader, err := loader.GetConfigLoader(sche.source)
+	ld, err := loader.GetConfigLoader(sche.source)
 	if err != nil {
 		return
 	}
 
-	data, err := loader.Load(sche.key)
+	data, err := ld.Load(sche.key)
 	if err != nil {
 		return
 	}
@@ -97,7 +97,7 @@ func (c *Confd) loadConfig(sche *Schema) (err error) {
 	}
 
 	c.Config = cfg
-	c.ConfigLoader = loader
+	c.ConfigLoader = ld
 	c.Marshaler = marshal
 	return
 }
