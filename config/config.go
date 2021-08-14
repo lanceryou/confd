@@ -6,6 +6,11 @@ import (
 	"github.com/lanceryou/confd/format"
 )
 
+type ConfigFactory interface {
+	New() Config
+	String() string
+}
+
 // Config config support multi-config format(yml, json,toml ...)
 type Config interface {
 	Clean() error
@@ -13,20 +18,19 @@ type Config interface {
 	Read(val interface{}) error
 	ReadSection(key string, val interface{}) error
 	HasValue(key string) bool
-	String() string
 }
 
 var (
-	cpMap = make(map[string]Config)
+	cpMap = make(map[string]ConfigFactory)
 )
 
 // RegisterConfig
-func RegisterConfig(c Config) {
+func RegisterConfigFactory(c ConfigFactory) {
 	cpMap[c.String()] = c
 }
 
 // DRegisterConfig deregister config
-func DRegisterConfig(name string) {
+func DRegisterConfigFactory(name string) {
 	delete(cpMap, name)
 }
 
@@ -37,5 +41,5 @@ func GetConfig(name string) (Config, error) {
 		return nil, fmt.Errorf("config %v has not register.", name)
 	}
 
-	return cfg, nil
+	return cfg.New(), nil
 }

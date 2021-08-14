@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	config.RegisterConfig(vp.NewConfig())
+	config.RegisterConfigFactory(vp.NewConfig())
 	format.RegisterMarshaler(
 		&json.MarshalerJson{},
 		&yaml.MarshalerYml{},

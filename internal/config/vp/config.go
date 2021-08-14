@@ -7,12 +7,16 @@ import (
 	"github.com/lanceryou/confd/format"
 )
 
-func NewConfig() config.Config {
+func NewConfig() config.ConfigFactory {
 	return &viperConfig{vp: viper.New()}
 }
 
 type viperConfig struct {
 	vp *viper.Viper
+}
+
+func (v *viperConfig) New() config.Config {
+	return &viperConfig{vp: viper.New()}
 }
 
 func (v *viperConfig) Clean() error {
