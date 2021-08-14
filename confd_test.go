@@ -165,5 +165,142 @@ func TestConfd_LoadConfig(t *testing.T) {
 }
 
 func TestConfd_WatchConfig(t *testing.T) {
+	registerLoader()
 
+	ts := []struct {
+		testStruct  TestStruct
+		key         string
+		schema      string
+		fn          func(interface{}) []byte
+		hasKeys     []string
+		excludeKeys []string
+		int64Map    map[string]int64
+		strMap      map[string]string
+		float64Map  map[string]float64
+
+		watchStruct TestStruct
+	}{
+		{
+			testStruct:  TestStruct{Count: 1, Str: "test", Nest: &NestStruct{Nick: "lancer", Score: 1.2}},
+			watchStruct: TestStruct{Count: 2, Str: "test", Nest: &NestStruct{Nick: "lancer", Score: 1.2}},
+			key:         "key",
+			schema:      "mock:json:key",
+			fn:          mustJson,
+			hasKeys:     []string{"count", "str", "nest", "nest.score", "nest.nick"},
+			int64Map: map[string]int64{
+				"count": 2,
+			},
+			strMap: map[string]string{
+				"str":       "test",
+				"nest.nick": "lancer",
+			},
+			float64Map: map[string]float64{
+				"nest.score": 1.2,
+			},
+		},
+		{
+			testStruct:  TestStruct{Count: 2, Str: "test", Nest: &NestStruct{Nick: "lancer", Score: 1.2}},
+			watchStruct: TestStruct{Count: 223, Str: "test2", Nest: &NestStruct{Nick: "lancer", Score: 1.2}},
+			key:         "key",
+			schema:      "mock:yaml:key",
+			fn:          mustYml,
+			hasKeys:     []string{"count", "str", "nest", "nest.score", "nest.nick"},
+			int64Map: map[string]int64{
+				"count": 223,
+			},
+			strMap: map[string]string{
+				"str":       "test2",
+				"nest.nick": "lancer",
+			},
+			float64Map: map[string]float64{
+				"nest.score": 1.2,
+			},
+		},
+		{
+			key:         "key",
+			watchStruct: TestStruct{Count: 2, Str: "test", Nest: &NestStruct{Nick: "lancer", Score: 1.2}},
+			schema:      "mock:json:key",
+			fn:          mustJson,
+			hasKeys:     []string{"count", "str", "nest", "nest.score", "nest.nick"},
+			int64Map: map[string]int64{
+				"count": 2,
+			},
+			strMap: map[string]string{
+				"str":       "test",
+				"nest.nick": "lancer",
+			},
+			float64Map: map[string]float64{
+				"nest.score": 1.2,
+			},
+		},
+	}
+
+	for _, s := range ts {
+		conf := NewConfd(WithSchema(s.schema))
+		ml.Set(s.key, s.fn(s.testStruct))
+		if err := conf.LoadConfig(); err != nil {
+			t.Errorf("some err:%v", err)
+		}
+
+		watchCh := make(chan bool, 1)
+		retCh := make(chan bool, 1)
+		go func() {
+			<-watchCh
+			if err := conf.WatchConfig(); err != nil {
+				t.Errorf("watch err %v", err)
+			}
+
+			retCh <- true
+		}()
+
+		ml.Set(s.key, s.fn(s.watchStruct))
+		watchCh <- true
+		// wait watch change
+		<-retCh
+		for _, key := range s.hasKeys {
+			if !conf.HasValue(key) {
+				t.Errorf("expect has key:%v", key)
+			}
+		}
+
+		for _, key := range s.excludeKeys {
+			if conf.HasValue(key) {
+				t.Errorf("expect has key:%v", key)
+			}
+		}
+
+		for k, v := range s.int64Map {
+			var val int64
+			if err := conf.ReadSection(k, &val); err != nil {
+				t.Errorf("read error %v", err)
+			}
+
+			if val != v {
+				t.Errorf("expect val %v, but val %v", v, val)
+			}
+		}
+
+		for k, v := range s.float64Map {
+			var val float64
+			if err := conf.ReadSection(k, &val); err != nil {
+				t.Errorf("read error %v", err)
+			}
+
+			if val != v {
+				t.Errorf("expect val %v, but val %v", v, val)
+			}
+		}
+
+		for k, v := range s.strMap {
+			var val string
+			if err := conf.ReadSection(k, &val); err != nil {
+				t.Errorf("read error %v", err)
+			}
+
+			if val != v {
+				t.Errorf("expect val %v, but val %v", v, val)
+			}
+		}
+
+	}
 }

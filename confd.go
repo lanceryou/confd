@@ -99,29 +99,26 @@ func (c *Confd) loadConfig(sche *Schema) (err error) {
 	c.Config = cfg
 	c.ConfigLoader = ld
 	c.Marshaler = marshal
+	c.sche = sche
 	return
 }
 
 // watch config change.
 func (c *Confd) WatchConfig() (err error) {
-	for {
-		ret, err := c.ConfigLoader.Watch(c.sche.key)
-		if err != nil {
-			return err
-		}
-
-		switch ret.Action {
-		case loader.Create, loader.Update:
-			if err = c.Config.Clean(); err != nil {
-				return err
-			}
-			err = c.Config.ReadIn(c.Marshaler, ret.Result)
-		case loader.Delete:
-			err = c.Config.Clean()
-		}
-
-		if err != nil {
-			return err
-		}
+	ret, err := c.ConfigLoader.Watch(c.sche.key)
+	if err != nil {
+		return err
 	}
+
+	switch ret.Action {
+	case loader.Create, loader.Update:
+		if err = c.Config.Clean(); err != nil {
+			return err
+		}
+		err = c.Config.ReadIn(c.Marshaler, ret.Result)
+	case loader.Delete:
+		err = c.Config.Clean()
+	}
+
+	return
 }

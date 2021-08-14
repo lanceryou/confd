@@ -32,7 +32,7 @@ func (f *FileLoader) Load(path string) (data []byte, err error) {
 	return ioutil.ReadAll(fs)
 }
 
-// TODO 后续实现
+// watch path file change and reload the changed file
 func (f *FileLoader) Watch(path string) (ret *loader.WatchResult, err error) {
 	retChan := make(chan loader.OpType, 1)
 	err = f.watcher.AddWatch(path, func(event Event) error {
