@@ -14,7 +14,8 @@ func init() {
 	config.RegisterConfigFactory(vp.NewConfig())
 	format.RegisterMarshaler(
 		&json.MarshalerJson{},
+		&yaml.MarshalerYaml{},
 		&yaml.MarshalerYml{},
 	)
-	loader.RegisterConfigLoader(&file.FileLoader{})
+	loader.RegisterConfigLoader(file.NewFileLoader())
 }
